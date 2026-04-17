@@ -8,9 +8,7 @@ import Register from "@wayward/game/mod/ModRegistry";
 import { DialogId } from "@wayward/game/ui/screen/screens/game/Dialogs";
 import Dialog from "@wayward/game/ui/screen/screens/game/component/Dialog";
 import { ScreenId } from "@wayward/game/ui/screen/IScreen"; 
-import { CheckButton } from "@wayward/game/ui/component/CheckButton";
-import Component from "@wayward/game/ui/component/Component";
-import { Heading } from "@wayward/game/ui/component/Text";
+import { CheckButton } from "@wayward/game/ui/component/CheckButton"; 
 
 /**
  * Interface for mod save data
@@ -328,90 +326,7 @@ export default class QualityHighlighterMod extends Mod {
             this.scanVisibleTilesForQuality();
         }
     }
-    
-    /**
-     * Register mod settings section in the options menu
-     */
-    @Register.optionsSection
-    public initializeOptionsSection(component: Component): void {
-        // Add section heading
-        const heading = new Heading();
-        heading.element.textContent = "Quality Highlighter Settings";
-        component.append(heading);
-        
-        // Quality Items checkbox
-        const qualityCheckbox = new CheckButton();
-        qualityCheckbox.element.textContent = "Highlight Quality Items";
-        qualityCheckbox.setChecked(this.isHighlightingEnabled);
-        qualityCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
-            this.setHighlightingEnabled(checked);
-        });
-        component.append(qualityCheckbox);
-        
-        // Civilization Items checkbox
-        const civCheckbox = new CheckButton();
-        civCheckbox.element.textContent = "Include Civilization Items";
-        civCheckbox.setChecked(this.includeCivilizationItems);
-        civCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
-            this.setCivilizationItemsEnabled(checked);
-        });
-        component.append(civCheckbox);
-        
-        // Limestone checkbox
-        const limestoneCheckbox = new CheckButton();
-        limestoneCheckbox.element.textContent = "Highlight Limestone";
-        limestoneCheckbox.setChecked(this.includeOresTiles);
-        limestoneCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
-            this.setOresTilesEnabled(checked);
-        });
-        component.append(limestoneCheckbox);
-        
-        // Talc checkbox
-        const talcCheckbox = new CheckButton();
-        talcCheckbox.element.textContent = "Highlight Talc";
-        talcCheckbox.setChecked(this.includeTalcTiles);
-        talcCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
-            this.setTalcTilesEnabled(checked);
-        });
-        component.append(talcCheckbox);
-        
-        // Topaz checkbox
-        const topazCheckbox = new CheckButton();
-        topazCheckbox.element.textContent = "Highlight Topaz";
-        topazCheckbox.setChecked(this.includeTopazTiles);
-        topazCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
-            this.setTopazTilesEnabled(checked);
-        });
-        component.append(topazCheckbox);
-        
-        // Iron checkbox
-        const ironCheckbox = new CheckButton();
-        ironCheckbox.element.textContent = "Highlight Iron";
-        ironCheckbox.setChecked(this.includeIronTiles);
-        ironCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
-            this.setIronTilesEnabled(checked);
-        });
-        component.append(ironCheckbox);
-        
-        // Copper checkbox
-        const copperCheckbox = new CheckButton();
-        copperCheckbox.element.textContent = "Highlight Copper";
-        copperCheckbox.setChecked(this.includeCopperTiles);
-        copperCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
-            this.setCopperTilesEnabled(checked);
-        });
-        component.append(copperCheckbox);
-        
-        // Tin checkbox
-        const tinCheckbox = new CheckButton();
-        tinCheckbox.element.textContent = "Highlight Tin";
-        tinCheckbox.setChecked(this.includeTinTiles);
-        tinCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
-            this.setTinTilesEnabled(checked);
-        });
-        component.append(tinCheckbox);
-    }
-
+     
     /**
      * Setup keyboard event listener for 'h' key
      */
