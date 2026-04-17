@@ -4,8 +4,79 @@ import type Tile from "@wayward/game/game/tile/Tile";
 import { IOverlayInfo, OverlayType } from "@wayward/game/game/tile/ITerrain";
 import { EventHandler } from "@wayward/game/event/EventManager";
 import { EventBus } from "@wayward/game/event/EventBuses";
+import Register from "@wayward/game/mod/ModRegistry";
+import { DialogId } from "@wayward/game/ui/screen/screens/game/Dialogs";
+import Dialog from "@wayward/game/ui/screen/screens/game/component/Dialog";
+import { ScreenId } from "@wayward/game/ui/screen/IScreen"; 
+import { CheckButton } from "@wayward/game/ui/component/CheckButton";
 
-export default class QualityHighlighterMod extends Mod { 
+/**
+ * Custom dialog for Quality Highlighter information
+ */
+class QualityInfoDialog extends Dialog {
+    private showHighlightingCheckbox: CheckButton;
+    private modInstance?: QualityHighlighterMod;
+    
+    constructor(id: DialogId) {
+        super(id);
+        console.log("Quality Info Dialog constructor called!");
+        
+        // Set up event listeners
+        this.event.subscribe("load", (host, initial: boolean) => {
+            console.log("Dialog load event fired, initial:", initial);
+            this.setupUI();
+        });
+    }
+    
+    public setModInstance(mod: QualityHighlighterMod): void {
+        console.log("Setting mod instance on dialog, highlighting enabled:", mod.isHighlightingEnabled);
+        this.modInstance = mod;
+        // Update checkbox state if UI is already set up
+        if (this.showHighlightingCheckbox) {
+            console.log("Updating checkbox to:", mod.isHighlightingEnabled);
+            this.showHighlightingCheckbox.setChecked(mod.isHighlightingEnabled);
+        }
+    }
+    
+    private setupUI(): void { 
+        console.log("Setting up dialog UI, mod instance:", this.modInstance ? "exists" : "undefined");
+        console.log("Initial highlighting state:", this.modInstance?.isHighlightingEnabled ?? "unknown");
+        
+        // Add checkbox for show highlighting
+        this.showHighlightingCheckbox = new CheckButton();
+        this.showHighlightingCheckbox.element.textContent = "Show Highlighting";
+        this.showHighlightingCheckbox.setChecked(this.modInstance?.isHighlightingEnabled ?? true);
+        
+        // Add event handler for checkbox toggle
+        this.showHighlightingCheckbox.event.subscribe("toggle", (host, checked: boolean) => {
+            console.log("Checkbox toggle event - checked:", checked, "mod instance:", this.modInstance ? "exists" : "undefined");
+            if (this.modInstance) {
+                this.modInstance.setHighlightingEnabled(checked);
+            } else {
+                console.warn("No mod instance available when toggling checkbox!");
+            }
+        });
+        
+        this.body.append(this.showHighlightingCheckbox);
+    }
+    
+    protected onShow(): void {
+        // This will run when the dialog is shown
+        console.log("Quality Info Dialog onShow called!");
+    }
+}
+
+export default class QualityHighlighterMod extends Mod {
+    @Register.dialog("QualityInfoDialog", {
+        minResolution: { x: 300, y: 200 },
+        size: { x: 0.3, y: 0.4 },
+        edges: "center"
+    }, QualityInfoDialog)
+    public readonly qualityDialogId: DialogId;
+    
+    // State for whether highlighting is enabled
+    public isHighlightingEnabled: boolean = true;
+    
     /**
      * Initialize the mod and set up keyboard listener
      */
@@ -30,126 +101,68 @@ export default class QualityHighlighterMod extends Mod {
     }
 
     /**
-     * Function that runs when 'p' key is pressed - now opens a modal window
+     * Function that runs when 'p' key is pressed - opens the Wayward dialog
      */
     private onPKeyPressed(): void {
-        console.log("P key pressed! Opening quality info window...");
-        this.openQualityInfoWindow();
+        console.log("P key pressed! Toggling quality info dialog...");
+        this.toggleQualityDialog();
     }
 
     /**
-     * Create and open a simple HTML modal window
+     * Toggle the quality info dialog
      */
-    private openQualityInfoWindow(): void {
-        // Remove any existing modal
-        this.closeQualityInfoWindow();
-        
-        // Create modal overlay
-        const overlay = document.createElement('div');
-        overlay.id = 'quality-highlighter-modal';
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-        `;
-        
-        // Create modal content
-        const modal = document.createElement('div');
-        modal.style.cssText = `
-            background-color: #2d2d30;
-            color: #cccccc;
-            padding: 20px;
-            border-radius: 8px;
-            min-width: 400px;
-            max-width: 600px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        `;
-        
-        // Get current player info
-        const playerX = localPlayer?.x ?? 0;
-        const playerY = localPlayer?.y ?? 0;
-        const playerZ = localPlayer?.z ?? 0;
-        const qualityTileCount = this.qualityTilesToHighlight.size;
-        
-        // Create modal content HTML
-        modal.innerHTML = `
-            <h2 style="margin-top: 0; color: #ffffff; text-align: center;">Quality Highlighter Info</h2>
-            <div style="margin: 15px 0;">
-                <p><strong>Player Position:</strong> (${playerX}, ${playerY}, ${playerZ})</p>
-                <p><strong>Quality Tiles Highlighted:</strong> ${qualityTileCount}</p>
-                <p><strong>Controls:</strong></p>
-                <ul>
-                    <li>Press 'P' to open this window</li>
-                    <li>Move around to highlight quality tiles</li>
-                </ul>
-            </div>
-            <div style="text-align: center; margin-top: 20px;">
-                <button id="quality-modal-close" style="
-                    background-color: #0e639c;
-                    color: white;
-                    border: none;
-                    padding: 8px 16px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 14px;
-                ">Close</button>
-            </div>
-        `;
-        
-        // Add modal to overlay
-        overlay.appendChild(modal);
-        
-        // Add close event listeners
-        const closeButton = modal.querySelector('#quality-modal-close');
-        closeButton?.addEventListener('click', () => {
-            this.closeQualityInfoWindow();
-        });
-        
-        // Close on overlay click
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                this.closeQualityInfoWindow();
+    private toggleQualityDialog(): void {
+        const gameScreen = ui.screens.get(ScreenId.Game);
+        if (gameScreen) {
+            // Check if dialog is already open
+            const existingDialog = gameScreen.dialogs.get(this.qualityDialogId);
+            const wasOpen = !!existingDialog;
+            
+            gameScreen.dialogs.toggle(this.qualityDialogId);
+            
+            // Only set mod instance if dialog was just opened (not closed)
+            if (!wasOpen) {
+                const dialog = gameScreen.dialogs.get(this.qualityDialogId);
+                if (dialog && 'setModInstance' in dialog) {
+                    (dialog as unknown as QualityInfoDialog).setModInstance(this);
+                }
             }
-        });
-        
-        // Close on Escape key
-        const escapeHandler = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                this.closeQualityInfoWindow();
-                document.removeEventListener('keydown', escapeHandler);
-            }
-        };
-        document.addEventListener('keydown', escapeHandler);
-        
-        // Add to page
-        document.body.appendChild(overlay);
-        
-        console.log("Quality info window opened successfully!");
+        }
     }
     
     /**
-     * Close the quality info modal window
+     * Enable or disable highlighting
      */
-    private closeQualityInfoWindow(): void {
-        const existingModal = document.getElementById('quality-highlighter-modal');
-        if (existingModal) {
-            existingModal.remove();
+    public setHighlightingEnabled(enabled: boolean): void {
+        console.log("Setting highlighting enabled:", enabled);
+        this.isHighlightingEnabled = enabled;
+        
+        if (!enabled) {
+            // Clear all existing highlights when disabled
+            this.clearAllHighlights();
+        } else {
+            // Re-scan when enabled
+            this.scanVisibleTilesForQuality();
         }
+    }
+    
+    /**
+     * Clear all quality tile highlights
+     */
+    private clearAllHighlights(): void {
+        for (const [, { tile, overlay }] of this.qualityTilesToHighlight) {
+            tile.removeOverlay(overlay);
+        }
+        this.qualityTilesToHighlight.clear();
     }
 
 
 
     @EventHandler(EventBus.LocalPlayer, "postMove")
     protected onMove(): void {
-        this.scanVisibleTilesForQuality();
+        if (this.isHighlightingEnabled) {
+            this.scanVisibleTilesForQuality();
+        }
         this.cleanupInvalidQualityTiles();
         this.addPlusTilesToWindow();
     } 
@@ -186,15 +199,15 @@ export default class QualityHighlighterMod extends Mod {
     } 
 
     /**
-     * Remove overlays from tiles that no longer have quality > 1
+     * Remove overlays from tiles that no longer have quality > 1 or when highlighting is disabled
      */
     private cleanupInvalidQualityTiles(): void {
         const tilesToRemove: string[] = [];
         const playerZ = localPlayer.z;
         
         for (const [tileKey, { tile, overlay }] of this.qualityTilesToHighlight) {
-            // Remove overlay if tile is not on current z level or no longer has quality
-            if (tile.z !== playerZ || !tile.quality || tile.quality <= 1) {
+            // Remove overlay if highlighting is disabled, tile is not on current z level, or no longer has quality
+            if (!this.isHighlightingEnabled || tile.z !== playerZ || !tile.quality || tile.quality <= 1) {
                 tile.removeOverlay(overlay);
                 tilesToRemove.push(tileKey);
             }
@@ -246,6 +259,8 @@ export default class QualityHighlighterMod extends Mod {
      * Scan visible tiles around player for tiles with quality
      */
     private scanVisibleTilesForQuality(): void {
+        if (!this.isHighlightingEnabled) return; // Don't scan if highlighting is disabled
+        
         const island = game.islands.active[0];
         if (!island) return;
  
