@@ -9,6 +9,22 @@ import { DialogId } from "@wayward/game/ui/screen/screens/game/Dialogs";
 import Dialog from "@wayward/game/ui/screen/screens/game/component/Dialog";
 import { ScreenId } from "@wayward/game/ui/screen/IScreen"; 
 import { CheckButton } from "@wayward/game/ui/component/CheckButton";
+import Component from "@wayward/game/ui/component/Component";
+import { Heading } from "@wayward/game/ui/component/Text";
+
+/**
+ * Interface for mod save data
+ */
+interface IQualityHighlighterSaveData {
+    isHighlightingEnabled?: boolean;
+    includeCivilizationItems?: boolean;
+    includeOresTiles?: boolean;
+    includeTalcTiles?: boolean;
+    includeTopazTiles?: boolean;
+    includeIronTiles?: boolean;
+    includeCopperTiles?: boolean;
+    includeTinTiles?: boolean;
+}
 
 /**
  * Custom dialog for Quality Highlighter information
@@ -180,31 +196,220 @@ export default class QualityHighlighterMod extends Mod {
         saveOpen: false
     }, QualityInfoDialog)
     public readonly qualityDialogId: DialogId;
-
-
     
-    // State for whether highlighting is enabled
-    public isHighlightingEnabled: boolean = true;
-    // State for whether to include civilization items
-    public includeCivilizationItems: boolean = false;
-    // State for whether to include ores tiles
-    public includeOresTiles: boolean = false;
-    // State for whether to include talc tiles
-    public includeTalcTiles: boolean = false;
-    // State for whether to include topaz tiles
-    public includeTopazTiles: boolean = false;
-    // State for whether to include iron tiles
-    public includeIronTiles: boolean = false;
-    // State for whether to include copper tiles
-    public includeCopperTiles: boolean = false;
-    // State for whether to include tin tiles
-    public includeTinTiles: boolean = false;
+    @Mod.globalData<QualityHighlighterMod>()
+    public readonly globalData!: IQualityHighlighterSaveData;
+    
+    @Mod.saveData<QualityHighlighterMod>()
+    public readonly data!: IQualityHighlighterSaveData;
+    
+    /**
+     * Initialize save data for new saves or when loading existing saves
+     */
+    public override initializeSaveData(data?: IQualityHighlighterSaveData): IQualityHighlighterSaveData {
+        return {
+            isHighlightingEnabled: data?.isHighlightingEnabled ?? this.globalData?.isHighlightingEnabled ?? true,
+            includeCivilizationItems: data?.includeCivilizationItems ?? this.globalData?.includeCivilizationItems ?? false,
+            includeOresTiles: data?.includeOresTiles ?? this.globalData?.includeOresTiles ?? false,
+            includeTalcTiles: data?.includeTalcTiles ?? this.globalData?.includeTalcTiles ?? false,
+            includeTopazTiles: data?.includeTopazTiles ?? this.globalData?.includeTopazTiles ?? false,
+            includeIronTiles: data?.includeIronTiles ?? this.globalData?.includeIronTiles ?? false,
+            includeCopperTiles: data?.includeCopperTiles ?? this.globalData?.includeCopperTiles ?? false,
+            includeTinTiles: data?.includeTinTiles ?? this.globalData?.includeTinTiles ?? false
+        };
+    }
+    
+    /**
+     * Initialize global data when first accessed
+     */
+    public override initializeGlobalData(data?: IQualityHighlighterSaveData): IQualityHighlighterSaveData {
+        return {
+            isHighlightingEnabled: data?.isHighlightingEnabled ?? true,
+            includeCivilizationItems: data?.includeCivilizationItems ?? false,
+            includeOresTiles: data?.includeOresTiles ?? false,
+            includeTalcTiles: data?.includeTalcTiles ?? false,
+            includeTopazTiles: data?.includeTopazTiles ?? false,
+            includeIronTiles: data?.includeIronTiles ?? false,
+            includeCopperTiles: data?.includeCopperTiles ?? false,
+            includeTinTiles: data?.includeTinTiles ?? false
+        };
+    }
+    
+    /**
+     * Get current settings - use saveData if available, otherwise globalData
+     */
+    private getCurrentSettings(): IQualityHighlighterSaveData {
+        // If we have save data (meaning we're in an active game), use it
+        if (this.data && Object.keys(this.data).length > 0) {
+            return this.data;
+        }
+        // Otherwise, use global data (persists across all sessions)
+        return this.globalData;
+    }
+    
+    /**
+     * Save settings to both saveData and globalData
+     */
+    private saveCurrentSettings(settings: IQualityHighlighterSaveData): void {
+        // Always update global data (persists across sessions)
+        Object.assign(this.globalData, settings);
+        
+        // Update saveData if available (in-game only)
+        if (this.data && Object.keys(this.data).length > 0) {
+            Object.assign(this.data, settings);
+        }
+    }
+    
+    // State properties that sync with current settings (hybrid approach)
+    public get isHighlightingEnabled(): boolean { 
+        return this.getCurrentSettings().isHighlightingEnabled ?? true; 
+    }
+    public set isHighlightingEnabled(value: boolean) { 
+        this.saveCurrentSettings({ isHighlightingEnabled: value });
+    }
+    
+    public get includeCivilizationItems(): boolean { 
+        return this.getCurrentSettings().includeCivilizationItems ?? false; 
+    }
+    public set includeCivilizationItems(value: boolean) { 
+        this.saveCurrentSettings({ includeCivilizationItems: value });
+    }
+    
+    public get includeOresTiles(): boolean { 
+        return this.getCurrentSettings().includeOresTiles ?? false; 
+    }
+    public set includeOresTiles(value: boolean) { 
+        this.saveCurrentSettings({ includeOresTiles: value });
+    }
+    
+    public get includeTalcTiles(): boolean { 
+        return this.getCurrentSettings().includeTalcTiles ?? false; 
+    }
+    public set includeTalcTiles(value: boolean) { 
+        this.saveCurrentSettings({ includeTalcTiles: value });
+    }
+    
+    public get includeTopazTiles(): boolean { 
+        return this.getCurrentSettings().includeTopazTiles ?? false; 
+    }
+    public set includeTopazTiles(value: boolean) { 
+        this.saveCurrentSettings({ includeTopazTiles: value });
+    }
+    
+    public get includeIronTiles(): boolean { 
+        return this.getCurrentSettings().includeIronTiles ?? false; 
+    }
+    public set includeIronTiles(value: boolean) { 
+        this.saveCurrentSettings({ includeIronTiles: value });
+    }
+    
+    public get includeCopperTiles(): boolean { 
+        return this.getCurrentSettings().includeCopperTiles ?? false; 
+    }
+    public set includeCopperTiles(value: boolean) { 
+        this.saveCurrentSettings({ includeCopperTiles: value });
+    }
+    
+    public get includeTinTiles(): boolean { 
+        return this.getCurrentSettings().includeTinTiles ?? false; 
+    }
+    public set includeTinTiles(value: boolean) { 
+        this.saveCurrentSettings({ includeTinTiles: value });
+    }
     
     /**
      * Initialize the mod and set up keyboard listener
      */
     public override onInitialize(): void {
         this.setupKeyboardListener();
+        
+        // Perform initial scan when mod loads if highlighting is enabled
+        if (this.isHighlightingEnabled) {
+            this.scanVisibleTilesForQuality();
+        }
+    }
+    
+    /**
+     * Register mod settings section in the options menu
+     */
+    @Register.optionsSection
+    public initializeOptionsSection(component: Component): void {
+        // Add section heading
+        const heading = new Heading();
+        heading.element.textContent = "Quality Highlighter Settings";
+        component.append(heading);
+        
+        // Quality Items checkbox
+        const qualityCheckbox = new CheckButton();
+        qualityCheckbox.element.textContent = "Highlight Quality Items";
+        qualityCheckbox.setChecked(this.isHighlightingEnabled);
+        qualityCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
+            this.setHighlightingEnabled(checked);
+        });
+        component.append(qualityCheckbox);
+        
+        // Civilization Items checkbox
+        const civCheckbox = new CheckButton();
+        civCheckbox.element.textContent = "Include Civilization Items";
+        civCheckbox.setChecked(this.includeCivilizationItems);
+        civCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
+            this.setCivilizationItemsEnabled(checked);
+        });
+        component.append(civCheckbox);
+        
+        // Limestone checkbox
+        const limestoneCheckbox = new CheckButton();
+        limestoneCheckbox.element.textContent = "Highlight Limestone";
+        limestoneCheckbox.setChecked(this.includeOresTiles);
+        limestoneCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
+            this.setOresTilesEnabled(checked);
+        });
+        component.append(limestoneCheckbox);
+        
+        // Talc checkbox
+        const talcCheckbox = new CheckButton();
+        talcCheckbox.element.textContent = "Highlight Talc";
+        talcCheckbox.setChecked(this.includeTalcTiles);
+        talcCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
+            this.setTalcTilesEnabled(checked);
+        });
+        component.append(talcCheckbox);
+        
+        // Topaz checkbox
+        const topazCheckbox = new CheckButton();
+        topazCheckbox.element.textContent = "Highlight Topaz";
+        topazCheckbox.setChecked(this.includeTopazTiles);
+        topazCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
+            this.setTopazTilesEnabled(checked);
+        });
+        component.append(topazCheckbox);
+        
+        // Iron checkbox
+        const ironCheckbox = new CheckButton();
+        ironCheckbox.element.textContent = "Highlight Iron";
+        ironCheckbox.setChecked(this.includeIronTiles);
+        ironCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
+            this.setIronTilesEnabled(checked);
+        });
+        component.append(ironCheckbox);
+        
+        // Copper checkbox
+        const copperCheckbox = new CheckButton();
+        copperCheckbox.element.textContent = "Highlight Copper";
+        copperCheckbox.setChecked(this.includeCopperTiles);
+        copperCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
+            this.setCopperTilesEnabled(checked);
+        });
+        component.append(copperCheckbox);
+        
+        // Tin checkbox
+        const tinCheckbox = new CheckButton();
+        tinCheckbox.element.textContent = "Highlight Tin";
+        tinCheckbox.setChecked(this.includeTinTiles);
+        tinCheckbox.event.subscribe("toggle", (_, checked: boolean) => {
+            this.setTinTilesEnabled(checked);
+        });
+        component.append(tinCheckbox);
     }
 
     /**
@@ -237,6 +442,12 @@ export default class QualityHighlighterMod extends Mod {
             
             // Only set mod instance if dialog was just opened (not closed)
             if (!wasOpen) {
+                const dialog = gameScreen.dialogs.get(this.qualityDialogId);
+                if (dialog && 'setModInstance' in dialog) {
+                    (dialog as unknown as QualityInfoDialog).setModInstance(this);
+                }
+            } else {
+                // Update dialog when reopening to reflect current settings
                 const dialog = gameScreen.dialogs.get(this.qualityDialogId);
                 if (dialog && 'setModInstance' in dialog) {
                     (dialog as unknown as QualityInfoDialog).setModInstance(this);
@@ -604,7 +815,7 @@ export default class QualityHighlighterMod extends Mod {
       * Check if terrain type contains topaz
       */
      private isTopazTerrain(terrainType: TerrainType): boolean {
-         return terrainType === TerrainType.GraniteWithTopaz;
+         return terrainType === TerrainType.BasaltWithSapphire;
      }
      
      /**
