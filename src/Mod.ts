@@ -23,6 +23,8 @@ interface IQualityHighlighterSaveData {
     includeIronTiles?: boolean;
     includeCopperTiles?: boolean;
     includeTinTiles?: boolean;
+    includeCoalTiles?: boolean;
+    includeNiterTiles?: boolean;
     includeGems?: boolean;
     includePlantsAndTrees?: boolean;
 }
@@ -38,14 +40,15 @@ class QualityInfoDialog extends Dialog {
     private includeIronCheckbox: CheckButton;
     private includeCopperCheckbox: CheckButton;
     private includeTinCheckbox: CheckButton;
+    private includeCoalCheckbox: CheckButton;
+    private includeNiterCheckbox: CheckButton;
     private includeGemsCheckbox: CheckButton;
     private includePlantsAndTreesCheckbox: CheckButton;
     private modInstance?: QualityHighlighterMod;
     
     constructor(id: DialogId) {
         super(id);
-        
-        // Set up event listeners
+        this.header.setText(() => "Quality Highlighter [H]");
         this.event.subscribe("load", (host, initial: boolean) => {
             this.setupUI();
         });
@@ -74,6 +77,12 @@ class QualityInfoDialog extends Dialog {
         }
         if (this.includeTinCheckbox) {
             this.includeTinCheckbox.setChecked(mod.includeTinTiles);
+        }
+        if (this.includeCoalCheckbox) {
+            this.includeCoalCheckbox.setChecked(mod.includeCoalTiles);
+        }
+        if (this.includeNiterCheckbox) {
+            this.includeNiterCheckbox.setChecked(mod.includeNiterTiles);
         }
         if (this.includeGemsCheckbox) {
             this.includeGemsCheckbox.setChecked(mod.includeGems);
@@ -168,6 +177,26 @@ class QualityInfoDialog extends Dialog {
             }
         });
         
+        // Add checkbox for coal tiles
+        this.includeCoalCheckbox = new CheckButton();
+        this.includeCoalCheckbox.element.textContent = "Include Coal Tiles";
+        this.includeCoalCheckbox.setChecked(this.modInstance?.includeCoalTiles ?? false);
+        this.includeCoalCheckbox.event.subscribe("toggle", (checkButton:CheckButton) => {
+            if (this.modInstance) {
+                this.modInstance.setCoalTilesEnabled(checkButton.checked);
+            }
+        });
+
+        // Add checkbox for niter tiles
+        this.includeNiterCheckbox = new CheckButton();
+        this.includeNiterCheckbox.element.textContent = "Include Niter Tiles";
+        this.includeNiterCheckbox.setChecked(this.modInstance?.includeNiterTiles ?? false);
+        this.includeNiterCheckbox.event.subscribe("toggle", (checkButton:CheckButton) => {
+            if (this.modInstance) {
+                this.modInstance.setNiterTilesEnabled(checkButton.checked);
+            }
+        });
+
         // Add checkbox for gems
         this.includeGemsCheckbox = new CheckButton();
         this.includeGemsCheckbox.element.textContent = "Highlight Gems";
@@ -197,6 +226,8 @@ class QualityInfoDialog extends Dialog {
         this.body.append(this.includeIronCheckbox);
         this.body.append(this.includeCopperCheckbox);
         this.body.append(this.includeTinCheckbox);
+        this.body.append(this.includeCoalCheckbox);
+        this.body.append(this.includeNiterCheckbox);
     }
     
 }
@@ -232,6 +263,8 @@ export default class QualityHighlighterMod extends Mod {
             includeIronTiles: data?.includeIronTiles ?? this.globalData?.includeIronTiles ?? false,
             includeCopperTiles: data?.includeCopperTiles ?? this.globalData?.includeCopperTiles ?? false,
             includeTinTiles: data?.includeTinTiles ?? this.globalData?.includeTinTiles ?? false,
+            includeCoalTiles: data?.includeCoalTiles ?? this.globalData?.includeCoalTiles ?? false,
+            includeNiterTiles: data?.includeNiterTiles ?? this.globalData?.includeNiterTiles ?? false,
             includeGems: data?.includeGems ?? this.globalData?.includeGems ?? false,
             includePlantsAndTrees: data?.includePlantsAndTrees ?? this.globalData?.includePlantsAndTrees ?? false,
         };
@@ -250,6 +283,8 @@ export default class QualityHighlighterMod extends Mod {
             includeIronTiles: data?.includeIronTiles ?? false,
             includeCopperTiles: data?.includeCopperTiles ?? false,
             includeTinTiles: data?.includeTinTiles ?? false,
+            includeCoalTiles: data?.includeCoalTiles ?? false,
+            includeNiterTiles: data?.includeNiterTiles ?? false,
             includeGems: data?.includeGems ?? false,
             includePlantsAndTrees: data?.includePlantsAndTrees ?? false,
         };
@@ -335,6 +370,20 @@ export default class QualityHighlighterMod extends Mod {
     }
     public set includeTinTiles(value: boolean) {
         this.saveCurrentSettings({ includeTinTiles: value });
+    }
+
+    public get includeCoalTiles(): boolean {
+        return this.getCurrentSettings().includeCoalTiles ?? false;
+    }
+    public set includeCoalTiles(value: boolean) {
+        this.saveCurrentSettings({ includeCoalTiles: value });
+    }
+
+    public get includeNiterTiles(): boolean {
+        return this.getCurrentSettings().includeNiterTiles ?? false;
+    }
+    public set includeNiterTiles(value: boolean) {
+        this.saveCurrentSettings({ includeNiterTiles: value });
     }
 
     public get includeGems(): boolean {
@@ -513,6 +562,24 @@ export default class QualityHighlighterMod extends Mod {
         }
     }
 
+    public setCoalTilesEnabled(enabled: boolean): void {
+        this.includeCoalTiles = enabled;
+
+        if (this.isHighlightingEnabled) {
+            this.clearAllHighlights();
+            this.scanVisibleTilesForQuality();
+        }
+    }
+
+    public setNiterTilesEnabled(enabled: boolean): void {
+        this.includeNiterTiles = enabled;
+
+        if (this.isHighlightingEnabled) {
+            this.clearAllHighlights();
+            this.scanVisibleTilesForQuality();
+        }
+    }
+
     /**
      * Enable or disable gem highlighting
      */
@@ -608,7 +675,9 @@ export default class QualityHighlighterMod extends Mod {
                 (this.includeGems && this.isTopazTerrain(tile.type)) ||
                 (this.includeIronTiles && this.isIronTerrain(tile.type)) ||
                 (this.includeCopperTiles && this.isCopperTerrain(tile.type)) ||
-                (this.includeTinTiles && this.isTinTerrain(tile.type));
+                (this.includeTinTiles && this.isTinTerrain(tile.type)) ||
+                (this.includeCoalTiles && this.isCoalTerrain(tile.type)) ||
+                (this.includeNiterTiles && this.isNiterTerrain(tile.type));
 
             let shouldRemove = false;
 
@@ -744,7 +813,9 @@ export default class QualityHighlighterMod extends Mod {
                     (this.includeGems && this.isTopazTerrain(tile.type)) ||
                     (this.includeIronTiles && this.isIronTerrain(tile.type)) ||
                     (this.includeCopperTiles && this.isCopperTerrain(tile.type)) ||
-                    (this.includeTinTiles && this.isTinTerrain(tile.type));
+                    (this.includeTinTiles && this.isTinTerrain(tile.type)) ||
+                (this.includeCoalTiles && this.isCoalTerrain(tile.type)) ||
+                (this.includeNiterTiles && this.isNiterTerrain(tile.type));
                 
                 // Skip if neither quality nor ores
                 if (!hasQuality && !isOresTile) continue;
@@ -863,5 +934,14 @@ export default class QualityHighlighterMod extends Mod {
          return terrainType === TerrainType.GraniteWithTin ||
                 terrainType === TerrainType.SandstoneWithTin;
      }
-  
+
+     private isCoalTerrain(terrainType: TerrainType): boolean {
+         return terrainType === TerrainType.GraniteWithCoal ||
+                terrainType === TerrainType.BasaltWithCoal;
+     }
+
+     private isNiterTerrain(terrainType: TerrainType): boolean {
+         return terrainType === TerrainType.SandstoneWithNiter;
+     }
+
 }
