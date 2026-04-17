@@ -794,8 +794,12 @@ export default class QualityHighlighterMod extends Mod {
                 (this.includeCoalTiles && this.isCoalTerrain(tile.type)) ||
                 (this.includeNiterTiles && this.isNiterTerrain(tile.type));
                 
-                // Skip if neither quality nor limestone
-                if (!hasQuality && !isLimestoneTile) continue;
+                // Check doodad quality early so we don't skip the tile below
+                const hasDoodadQuality = this.includePlantsAndTrees &&
+                    tile.doodad?.quality !== undefined && tile.doodad.quality >= Quality.Superior;
+
+                // Skip if nothing of interest on this tile
+                if (!hasQuality && !isLimestoneTile && !hasDoodadQuality) continue;
                 
                 // If civilization items are enabled, check if it's a civilization item
                 const isCivilizationItem = hasQuality && tile.description?.civilizationScore && tile.description.civilizationScore > 0;
@@ -843,13 +847,13 @@ export default class QualityHighlighterMod extends Mod {
                 }
 
                 // Handle doodad quality overlay
-                if (this.includePlantsAndTrees) {
+                if (hasDoodadQuality) {
                     const doodad = tile.doodad;
-                    if (doodad?.quality !== undefined && doodad.quality >= Quality.Superior) {
+                    if (doodad !== undefined) {
                         const doodadTileKey = `${x},${y},${z}:doodad`;
                         if (!this.qualityTilesToHighlight.has(doodadTileKey)) {
                             tilesFound++;
-                            const overlay = this.createQualityOverlay(doodad.quality);
+                            const overlay = this.createQualityOverlay(doodad.quality!);
                             this.qualityTilesToHighlight.set(doodadTileKey, { tile, overlay });
                             tile.addOrUpdateOverlay(overlay);
                         }
