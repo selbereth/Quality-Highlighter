@@ -1,14 +1,15 @@
 import Mod from "@wayward/game/mod/Mod";
 import { Quality } from "@wayward/game/game/IObject";
-import type Tile from "@wayward/game/game/tile/Tile";  
+import type Tile from "@wayward/game/game/tile/Tile";
 import { IOverlayInfo, OverlayType, TerrainType } from "@wayward/game/game/tile/ITerrain";
+import { ItemTypeGroup } from "@wayward/game/game/item/IItem";
 import { EventHandler } from "@wayward/game/event/EventManager";
 import { EventBus } from "@wayward/game/event/EventBuses";
 import Register from "@wayward/game/mod/ModRegistry";
 import { DialogId } from "@wayward/game/ui/screen/screens/game/Dialogs";
 import Dialog from "@wayward/game/ui/screen/screens/game/component/Dialog";
 import { ScreenId } from "@wayward/game/ui/screen/IScreen"; 
-import { CheckButton } from "@wayward/game/ui/component/CheckButton"; 
+import { CheckButton } from "@wayward/game/ui/component/CheckButton";
 
 /**
  * Interface for mod save data
@@ -22,6 +23,8 @@ interface IQualityHighlighterSaveData {
     includeIronTiles?: boolean;
     includeCopperTiles?: boolean;
     includeTinTiles?: boolean;
+    includeGems?: boolean;
+    includePlantsAndTrees?: boolean;
 }
 
 /**
@@ -36,6 +39,8 @@ class QualityInfoDialog extends Dialog {
     private includeIronCheckbox: CheckButton;
     private includeCopperCheckbox: CheckButton;
     private includeTinCheckbox: CheckButton;
+    private includeGemsCheckbox: CheckButton;
+    private includePlantsAndTreesCheckbox: CheckButton;
     private modInstance?: QualityHighlighterMod;
     
     constructor(id: DialogId) {
@@ -73,6 +78,12 @@ class QualityInfoDialog extends Dialog {
         }
         if (this.includeTinCheckbox) {
             this.includeTinCheckbox.setChecked(mod.includeTinTiles);
+        }
+        if (this.includeGemsCheckbox) {
+            this.includeGemsCheckbox.setChecked(mod.includeGems);
+        }
+        if (this.includePlantsAndTreesCheckbox) {
+            this.includePlantsAndTreesCheckbox.setChecked(mod.includePlantsAndTrees);
         }
     }
     
@@ -173,19 +184,43 @@ class QualityInfoDialog extends Dialog {
             }
         });
         
+        // Add checkbox for gems
+        this.includeGemsCheckbox = new CheckButton();
+        this.includeGemsCheckbox.element.textContent = "Highlight Gems";
+        this.includeGemsCheckbox.setChecked(this.modInstance?.includeGems ?? false);
+        this.includeGemsCheckbox.event.subscribe("toggle", (checkButton: CheckButton) => {
+            if (this.modInstance) {
+                this.modInstance.setGemsEnabled(checkButton.checked);
+            }
+        });
+
+        // Add checkbox for plants & trees
+        this.includePlantsAndTreesCheckbox = new CheckButton();
+        this.includePlantsAndTreesCheckbox.element.textContent = "Highlight Plants & Trees";
+        this.includePlantsAndTreesCheckbox.setChecked(this.modInstance?.includePlantsAndTrees ?? false);
+        this.includePlantsAndTreesCheckbox.event.subscribe("toggle", (checkButton: CheckButton) => {
+            if (this.modInstance) {
+                this.modInstance.setPlantsAndTreesEnabled(checkButton.checked);
+            }
+        });
+
         this.body.append(this.showHighlightingCheckbox);
         this.body.append(this.includeCivilizationCheckbox);
+        this.body.append(this.includeGemsCheckbox);
+        this.body.append(this.includePlantsAndTreesCheckbox);
         this.body.append(this.includeOresCheckbox);
         this.body.append(this.includeTalcCheckbox);
         this.body.append(this.includeTopazCheckbox);
         this.body.append(this.includeIronCheckbox);
         this.body.append(this.includeCopperCheckbox);
         this.body.append(this.includeTinCheckbox);
-    } 
+    }
     
 }
 
 export default class QualityHighlighterMod extends Mod {
+
+    public static SCAN_RADIUS = 16;
 
     @Register.dialog("QualityInfoDialog", {
         minResolution: { x: 300, y: 400 },
@@ -213,7 +248,9 @@ export default class QualityHighlighterMod extends Mod {
             includeTopazTiles: data?.includeTopazTiles ?? this.globalData?.includeTopazTiles ?? false,
             includeIronTiles: data?.includeIronTiles ?? this.globalData?.includeIronTiles ?? false,
             includeCopperTiles: data?.includeCopperTiles ?? this.globalData?.includeCopperTiles ?? false,
-            includeTinTiles: data?.includeTinTiles ?? this.globalData?.includeTinTiles ?? false
+            includeTinTiles: data?.includeTinTiles ?? this.globalData?.includeTinTiles ?? false,
+            includeGems: data?.includeGems ?? this.globalData?.includeGems ?? false,
+            includePlantsAndTrees: data?.includePlantsAndTrees ?? this.globalData?.includePlantsAndTrees ?? false,
         };
     }
     
@@ -229,7 +266,9 @@ export default class QualityHighlighterMod extends Mod {
             includeTopazTiles: data?.includeTopazTiles ?? false,
             includeIronTiles: data?.includeIronTiles ?? false,
             includeCopperTiles: data?.includeCopperTiles ?? false,
-            includeTinTiles: data?.includeTinTiles ?? false
+            includeTinTiles: data?.includeTinTiles ?? false,
+            includeGems: data?.includeGems ?? false,
+            includePlantsAndTrees: data?.includePlantsAndTrees ?? false,
         };
     }
     
@@ -308,11 +347,25 @@ export default class QualityHighlighterMod extends Mod {
         this.saveCurrentSettings({ includeCopperTiles: value });
     }
     
-    public get includeTinTiles(): boolean { 
-        return this.getCurrentSettings().includeTinTiles ?? false; 
+    public get includeTinTiles(): boolean {
+        return this.getCurrentSettings().includeTinTiles ?? false;
     }
-    public set includeTinTiles(value: boolean) { 
+    public set includeTinTiles(value: boolean) {
         this.saveCurrentSettings({ includeTinTiles: value });
+    }
+
+    public get includeGems(): boolean {
+        return this.getCurrentSettings().includeGems ?? false;
+    }
+    public set includeGems(value: boolean) {
+        this.saveCurrentSettings({ includeGems: value });
+    }
+
+    public get includePlantsAndTrees(): boolean {
+        return this.getCurrentSettings().includePlantsAndTrees ?? false;
+    }
+    public set includePlantsAndTrees(value: boolean) {
+        this.saveCurrentSettings({ includePlantsAndTrees: value });
     }
     
     /**
@@ -326,7 +379,6 @@ export default class QualityHighlighterMod extends Mod {
             this.scanVisibleTilesForQuality();
         }
     }
-     
     /**
      * Setup keyboard event listener for 'h' key
      */
@@ -469,8 +521,31 @@ export default class QualityHighlighterMod extends Mod {
      */
     public setTinTilesEnabled(enabled: boolean): void {
         this.includeTinTiles = enabled;
-        
-        // Re-scan tiles when setting changes
+
+        if (this.isHighlightingEnabled) {
+            this.clearAllHighlights();
+            this.scanVisibleTilesForQuality();
+        }
+    }
+
+    /**
+     * Enable or disable gem highlighting
+     */
+    public setGemsEnabled(enabled: boolean): void {
+        this.includeGems = enabled;
+
+        if (this.isHighlightingEnabled) {
+            this.clearAllHighlights();
+            this.scanVisibleTilesForQuality();
+        }
+    }
+
+    /**
+     * Enable or disable plant & tree highlighting
+     */
+    public setPlantsAndTreesEnabled(enabled: boolean): void {
+        this.includePlantsAndTrees = enabled;
+
         if (this.isHighlightingEnabled) {
             this.clearAllHighlights();
             this.scanVisibleTilesForQuality();
@@ -535,12 +610,13 @@ export default class QualityHighlighterMod extends Mod {
     private cleanupInvalidQualityTiles(): void {
         const tilesToRemove: string[] = [];
         const playerZ = localPlayer.z;
-        
+
         for (const [tileKey, { tile, overlay }] of this.qualityTilesToHighlight) {
             const isQualityKey = tileKey.endsWith(':quality');
             const isOreKey = tileKey.endsWith(':ore');
-            
-            // Check if tile still qualifies for highlighting
+            const isGemKey = tileKey.endsWith(':gem');
+            const isDoodadKey = tileKey.endsWith(':doodad');
+
             const hasQuality = tile.quality !== undefined && tile.quality > 0;
             const isOresTile = (this.includeOresTiles && this.isOresTerrain(tile.type)) ||
                 (this.includeTalcTiles && this.isTalcTerrain(tile.type)) ||
@@ -548,28 +624,34 @@ export default class QualityHighlighterMod extends Mod {
                 (this.includeIronTiles && this.isIronTerrain(tile.type)) ||
                 (this.includeCopperTiles && this.isCopperTerrain(tile.type)) ||
                 (this.includeTinTiles && this.isTinTerrain(tile.type));
-            
+
             let shouldRemove = false;
-            
-            // Check if on wrong Z level or highlighting disabled
+
             if (!this.isHighlightingEnabled || tile.z !== playerZ) {
                 shouldRemove = true;
-            }
-            // Check quality overlay validity
-            else if (isQualityKey) {
+            } else if (isQualityKey) {
                 const isCivilizationItem = tile.description?.civilizationScore && tile.description.civilizationScore > 0;
                 const shouldShowCivilization = this.includeCivilizationItems || !isCivilizationItem;
                 if (!hasQuality || !shouldShowCivilization) {
                     shouldRemove = true;
                 }
-            }
-            // Check ore overlay validity  
-            else if (isOreKey) {
+            } else if (isOreKey) {
                 if (!isOresTile) {
                     shouldRemove = true;
                 }
+            } else if (isGemKey) {
+                const hasGem = this.includeGems && (tile.containedItems?.some(item => item.isInGroup(ItemTypeGroup.Gem)) ?? false);
+                if (!hasGem) {
+                    shouldRemove = true;
+                }
+            } else if (isDoodadKey) {
+                const doodad = tile.doodad;
+                const hasDoodadQuality = this.includePlantsAndTrees && doodad?.quality !== undefined && doodad.quality >= Quality.Superior;
+                if (!hasDoodadQuality) {
+                    shouldRemove = true;
+                }
             }
-            
+
             if (shouldRemove) {
                 tile.removeOverlay(overlay);
                 tilesToRemove.push(tileKey);
@@ -619,6 +701,19 @@ export default class QualityHighlighterMod extends Mod {
     }
     
     /**
+     * Create overlay info for gem tiles (question mark, white)
+     */
+    private createGemOverlay(): IOverlayInfo {
+        return {
+            type: OverlayType.QuestionMark,
+            red: 255,
+            green: 255,
+            blue: 255,
+            alpha: 200
+        };
+    }
+
+    /**
      * Create overlay info for ores tiles
      */
     private createOresOverlay(): IOverlayInfo {
@@ -641,11 +736,9 @@ export default class QualityHighlighterMod extends Mod {
         const island = game.islands.active[0];
         if (!island) return;
  
-        // const tilesX = 5
-        // const tilesY = 5 
-        // max visibility
-        const tilesX = 33
-        const tilesY = 33 
+        const radius = QualityHighlighterMod.SCAN_RADIUS;
+        const tilesX = radius * 2 + 1;
+        const tilesY = radius * 2 + 1;
         const centerX = localPlayer.x;
         const centerY = localPlayer.y;
         const z = localPlayer.z;
@@ -701,9 +794,37 @@ export default class QualityHighlighterMod extends Mod {
                         tile.addOrUpdateOverlay(overlay);
                     }
                 }
+
+                // Handle gem overlay
+                if (this.includeGems) {
+                    const hasGem = tile.containedItems?.some(item => item.isInGroup(ItemTypeGroup.Gem)) ?? false;
+                    if (hasGem) {
+                        const gemTileKey = `${x},${y},${z}:gem`;
+                        if (!this.qualityTilesToHighlight.has(gemTileKey)) {
+                            tilesFound++;
+                            const overlay = this.createGemOverlay();
+                            this.qualityTilesToHighlight.set(gemTileKey, { tile, overlay });
+                            tile.addOrUpdateOverlay(overlay);
+                        }
+                    }
+                }
+
+                // Handle doodad quality overlay
+                if (this.includePlantsAndTrees) {
+                    const doodad = tile.doodad;
+                    if (doodad?.quality !== undefined && doodad.quality >= Quality.Superior) {
+                        const doodadTileKey = `${x},${y},${z}:doodad`;
+                        if (!this.qualityTilesToHighlight.has(doodadTileKey)) {
+                            tilesFound++;
+                            const overlay = this.createQualityOverlay(doodad.quality);
+                            this.qualityTilesToHighlight.set(doodadTileKey, { tile, overlay });
+                            tile.addOrUpdateOverlay(overlay);
+                        }
+                    }
+                }
             }
         }
-        
+
     }
 
      private qualityTilesToHighlight = new Map<string, { tile: Tile; overlay: IOverlayInfo }>();
