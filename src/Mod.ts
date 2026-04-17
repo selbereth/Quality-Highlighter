@@ -372,6 +372,8 @@ export default class QualityHighlighterMod extends Mod {
             if (event.code === 'KeyH' || event.key.toLowerCase() === 'h') {
                 // Only trigger if no modifier keys are pressed
                 if (!event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey) {
+                    event.preventDefault();
+                    event.stopPropagation();
                     this.toggleQualityDialog();
                 }
             }
