@@ -35,7 +35,6 @@ class QualityInfoDialog extends Dialog {
     private includeCivilizationCheckbox: CheckButton;
     private includeOresCheckbox: CheckButton;
     private includeTalcCheckbox: CheckButton;
-    private includeTopazCheckbox: CheckButton;
     private includeIronCheckbox: CheckButton;
     private includeCopperCheckbox: CheckButton;
     private includeTinCheckbox: CheckButton;
@@ -66,9 +65,6 @@ class QualityInfoDialog extends Dialog {
         }
         if (this.includeTalcCheckbox) {
             this.includeTalcCheckbox.setChecked(mod.includeTalcTiles);
-        }
-        if (this.includeTopazCheckbox) {
-            this.includeTopazCheckbox.setChecked(mod.includeTopazTiles);
         }
         if (this.includeIronCheckbox) {
             this.includeIronCheckbox.setChecked(mod.includeIronTiles);
@@ -136,18 +132,6 @@ class QualityInfoDialog extends Dialog {
             }
         });
         
-        // Add checkbox for topaz tiles
-        this.includeTopazCheckbox = new CheckButton();
-        this.includeTopazCheckbox.element.textContent = "Include Topaz Tiles";
-        this.includeTopazCheckbox.setChecked(this.modInstance?.includeTopazTiles ?? false);
-        
-        // Add event handler for topaz checkbox toggle
-        this.includeTopazCheckbox.event.subscribe("toggle", (checkButton:CheckButton) => {
-            if (this.modInstance) {
-                this.modInstance.setTopazTilesEnabled(checkButton.checked);
-            }
-        });
-        
         // Add checkbox for iron tiles
         this.includeIronCheckbox = new CheckButton();
         this.includeIronCheckbox.element.textContent = "Include Iron Tiles";
@@ -210,7 +194,6 @@ class QualityInfoDialog extends Dialog {
         this.body.append(this.includePlantsAndTreesCheckbox);
         this.body.append(this.includeOresCheckbox);
         this.body.append(this.includeTalcCheckbox);
-        this.body.append(this.includeTopazCheckbox);
         this.body.append(this.includeIronCheckbox);
         this.body.append(this.includeCopperCheckbox);
         this.body.append(this.includeTinCheckbox);
@@ -620,7 +603,7 @@ export default class QualityHighlighterMod extends Mod {
             const hasQuality = tile.quality !== undefined && tile.quality > 0;
             const isOresTile = (this.includeOresTiles && this.isOresTerrain(tile.type)) ||
                 (this.includeTalcTiles && this.isTalcTerrain(tile.type)) ||
-                (this.includeTopazTiles && this.isTopazTerrain(tile.type)) ||
+                (this.includeGems && this.isTopazTerrain(tile.type)) ||
                 (this.includeIronTiles && this.isIronTerrain(tile.type)) ||
                 (this.includeCopperTiles && this.isCopperTerrain(tile.type)) ||
                 (this.includeTinTiles && this.isTinTerrain(tile.type));
@@ -756,7 +739,7 @@ export default class QualityHighlighterMod extends Mod {
                 // Check if it's an ore tile (if any ore type is enabled)
                 const isOresTile = (this.includeOresTiles && this.isOresTerrain(tile.type)) ||
                     (this.includeTalcTiles && this.isTalcTerrain(tile.type)) ||
-                    (this.includeTopazTiles && this.isTopazTerrain(tile.type)) ||
+                    (this.includeGems && this.isTopazTerrain(tile.type)) ||
                     (this.includeIronTiles && this.isIronTerrain(tile.type)) ||
                     (this.includeCopperTiles && this.isCopperTerrain(tile.type)) ||
                     (this.includeTinTiles && this.isTinTerrain(tile.type));
