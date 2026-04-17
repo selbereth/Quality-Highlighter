@@ -48,31 +48,31 @@ class QualityInfoDialog extends Dialog {
         this.showHighlightingCheckbox.setChecked(this.modInstance?.isHighlightingEnabled ?? true);
         
         // Add event handler for checkbox toggle
-        this.showHighlightingCheckbox.event.subscribe("toggle", (host, checked: boolean) => {
-            console.log("Checkbox toggle event - checked:", checked, "mod instance:", this.modInstance ? "exists" : "undefined");
+        this.showHighlightingCheckbox.event.subscribe("toggle", (checkButton:CheckButton) => {
+                        console.log("Checkbox toggle event - checked:", checkButton.checked, "mod instance:", this.modInstance ? "exists" : "undefined");
             if (this.modInstance) {
-                this.modInstance.setHighlightingEnabled(checked);
+                this.modInstance.setHighlightingEnabled(checkButton.checked);
             } else {
                 console.warn("No mod instance available when toggling checkbox!");
             }
         });
         
         this.body.append(this.showHighlightingCheckbox);
-    }
+    } 
     
-    protected onShow(): void {
-        // This will run when the dialog is shown
-        console.log("Quality Info Dialog onShow called!");
-    }
 }
 
 export default class QualityHighlighterMod extends Mod {
+
     @Register.dialog("QualityInfoDialog", {
-        minResolution: { x: 300, y: 200 },
+        minResolution: { x: 200, y: 200 },
         size: { x: 0.3, y: 0.4 },
-        edges: "center"
+        edges: "center",
+        saveOpen: false
     }, QualityInfoDialog)
     public readonly qualityDialogId: DialogId;
+
+
     
     // State for whether highlighting is enabled
     public isHighlightingEnabled: boolean = true;
@@ -85,27 +85,19 @@ export default class QualityHighlighterMod extends Mod {
     }
 
     /**
-     * Setup keyboard event listener for 'p' key
+     * Setup keyboard event listener for 'h' key
      */
     private setupKeyboardListener(): void {
         // Add event listener for keydown events
         document.addEventListener('keydown', (event: KeyboardEvent) => {
-            // Check if 'p' key was pressed (case insensitive)
-            if (event.code === 'KeyP' || event.key.toLowerCase() === 'p') {
+            // Check if 'h' key was pressed (case insensitive)
+            if (event.code === 'KeyH' || event.key.toLowerCase() === 'h') {
                 // Only trigger if no modifier keys are pressed
                 if (!event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey) {
-                    this.onPKeyPressed();
+                    this.toggleQualityDialog();
                 }
             }
         });
-    }
-
-    /**
-     * Function that runs when 'p' key is pressed - opens the Wayward dialog
-     */
-    private onPKeyPressed(): void {
-        console.log("P key pressed! Toggling quality info dialog...");
-        this.toggleQualityDialog();
     }
 
     /**
