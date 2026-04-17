@@ -1,0 +1,15 @@
+{
+  "extends": "English",
+    
+  "dictionaries": {
+    "dialog": {
+      "modQualityItemHighlighterQualityInfoDialog": "Highlighter Settings"
+    },
+    "actions": {
+      "modQualityItemHighlighterOpenQualityWindow": {
+        "name": "Open Quality Window",
+        "description": "Opens the Quality Highlighter window showing tile counts"
+      }
+    }
+  }
+}

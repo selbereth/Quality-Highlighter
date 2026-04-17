@@ -6,5 +6,8 @@
 	"file": "out/Mod",
 	"waywardVersion": "2.15.4-beta",
 	"tags": ["ui", "quality", "items", "highlighting", "visual"],
-	"multiplayer":"clientside"
+	"multiplayer":"clientside", 
+	"languages": [
+		"lang/english"
+	]
 }
