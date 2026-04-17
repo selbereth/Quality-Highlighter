@@ -17,9 +17,8 @@ import { CheckButton } from "@wayward/game/ui/component/CheckButton";
 interface IQualityHighlighterSaveData {
     isHighlightingEnabled?: boolean;
     includeCivilizationItems?: boolean;
-    includeOresTiles?: boolean;
+    includeLimestoneTiles?: boolean;
     includeTalcTiles?: boolean;
-    includeTopazTiles?: boolean;
     includeIronTiles?: boolean;
     includeCopperTiles?: boolean;
     includeTinTiles?: boolean;
@@ -35,7 +34,7 @@ interface IQualityHighlighterSaveData {
 class QualityInfoDialog extends Dialog {
     private showHighlightingCheckbox: CheckButton;
     private includeCivilizationCheckbox: CheckButton;
-    private includeOresCheckbox: CheckButton;
+    private includeLimestoneCheckbox: CheckButton;
     private includeTalcCheckbox: CheckButton;
     private includeIronCheckbox: CheckButton;
     private includeCopperCheckbox: CheckButton;
@@ -63,8 +62,8 @@ class QualityInfoDialog extends Dialog {
         if (this.includeCivilizationCheckbox) {
             this.includeCivilizationCheckbox.setChecked(mod.includeCivilizationItems);
         }
-        if (this.includeOresCheckbox) {
-            this.includeOresCheckbox.setChecked(mod.includeOresTiles);
+        if (this.includeLimestoneCheckbox) {
+            this.includeLimestoneCheckbox.setChecked(mod.includeLimestoneTiles);
         }
         if (this.includeTalcCheckbox) {
             this.includeTalcCheckbox.setChecked(mod.includeTalcTiles);
@@ -117,15 +116,15 @@ class QualityInfoDialog extends Dialog {
             }
         });
         
-        // Add checkbox for ores tiles
-        this.includeOresCheckbox = new CheckButton();
-        this.includeOresCheckbox.element.textContent = "Include Limestone Tiles";
-        this.includeOresCheckbox.setChecked(this.modInstance?.includeOresTiles ?? false);
+        // Add checkbox for limestone tiles
+        this.includeLimestoneCheckbox = new CheckButton();
+        this.includeLimestoneCheckbox.element.textContent = "Include Limestone Tiles";
+        this.includeLimestoneCheckbox.setChecked(this.modInstance?.includeLimestoneTiles ?? false);
         
-        // Add event handler for ores checkbox toggle
-        this.includeOresCheckbox.event.subscribe("toggle", (checkButton:CheckButton) => {
+        // Add event handler for limestone checkbox toggle
+        this.includeLimestoneCheckbox.event.subscribe("toggle", (checkButton:CheckButton) => {
             if (this.modInstance) {
-                this.modInstance.setOresTilesEnabled(checkButton.checked);
+                this.modInstance.setLimestoneTilesEnabled(checkButton.checked);
             }
         });
         
@@ -221,7 +220,7 @@ class QualityInfoDialog extends Dialog {
         this.body.append(this.includeCivilizationCheckbox);
         this.body.append(this.includeGemsCheckbox);
         this.body.append(this.includePlantsAndTreesCheckbox);
-        this.body.append(this.includeOresCheckbox);
+        this.body.append(this.includeLimestoneCheckbox);
         this.body.append(this.includeTalcCheckbox);
         this.body.append(this.includeIronCheckbox);
         this.body.append(this.includeCopperCheckbox);
@@ -257,9 +256,8 @@ export default class QualityHighlighterMod extends Mod {
         return {
             isHighlightingEnabled: data?.isHighlightingEnabled ?? this.globalData?.isHighlightingEnabled ?? true,
             includeCivilizationItems: data?.includeCivilizationItems ?? this.globalData?.includeCivilizationItems ?? false,
-            includeOresTiles: data?.includeOresTiles ?? this.globalData?.includeOresTiles ?? false,
+            includeLimestoneTiles: data?.includeLimestoneTiles ?? this.globalData?.includeLimestoneTiles ?? false,
             includeTalcTiles: data?.includeTalcTiles ?? this.globalData?.includeTalcTiles ?? false,
-            includeTopazTiles: data?.includeTopazTiles ?? this.globalData?.includeTopazTiles ?? false,
             includeIronTiles: data?.includeIronTiles ?? this.globalData?.includeIronTiles ?? false,
             includeCopperTiles: data?.includeCopperTiles ?? this.globalData?.includeCopperTiles ?? false,
             includeTinTiles: data?.includeTinTiles ?? this.globalData?.includeTinTiles ?? false,
@@ -277,9 +275,8 @@ export default class QualityHighlighterMod extends Mod {
         return {
             isHighlightingEnabled: data?.isHighlightingEnabled ?? true,
             includeCivilizationItems: data?.includeCivilizationItems ?? false,
-            includeOresTiles: data?.includeOresTiles ?? false,
+            includeLimestoneTiles: data?.includeLimestoneTiles ?? false,
             includeTalcTiles: data?.includeTalcTiles ?? false,
-            includeTopazTiles: data?.includeTopazTiles ?? false,
             includeIronTiles: data?.includeIronTiles ?? false,
             includeCopperTiles: data?.includeCopperTiles ?? false,
             includeTinTiles: data?.includeTinTiles ?? false,
@@ -330,11 +327,11 @@ export default class QualityHighlighterMod extends Mod {
         this.saveCurrentSettings({ includeCivilizationItems: value });
     }
     
-    public get includeOresTiles(): boolean { 
-        return this.getCurrentSettings().includeOresTiles ?? false; 
+    public get includeLimestoneTiles(): boolean { 
+        return this.getCurrentSettings().includeLimestoneTiles ?? false; 
     }
-    public set includeOresTiles(value: boolean) { 
-        this.saveCurrentSettings({ includeOresTiles: value });
+    public set includeLimestoneTiles(value: boolean) { 
+        this.saveCurrentSettings({ includeLimestoneTiles: value });
     }
     
     public get includeTalcTiles(): boolean { 
@@ -342,13 +339,6 @@ export default class QualityHighlighterMod extends Mod {
     }
     public set includeTalcTiles(value: boolean) { 
         this.saveCurrentSettings({ includeTalcTiles: value });
-    }
-    
-    public get includeTopazTiles(): boolean { 
-        return this.getCurrentSettings().includeTopazTiles ?? false; 
-    }
-    public set includeTopazTiles(value: boolean) { 
-        this.saveCurrentSettings({ includeTopazTiles: value });
     }
     
     public get includeIronTiles(): boolean { 
@@ -486,10 +476,10 @@ export default class QualityHighlighterMod extends Mod {
     }
     
     /**
-     * Enable or disable ores tiles highlighting
+     * Enable or disable limestone tiles highlighting
      */
-    public setOresTilesEnabled(enabled: boolean): void {
-        this.includeOresTiles = enabled;
+    public setLimestoneTilesEnabled(enabled: boolean): void {
+        this.includeLimestoneTiles = enabled;
         
         // Re-scan tiles when setting changes
         if (this.isHighlightingEnabled) {
@@ -503,19 +493,6 @@ export default class QualityHighlighterMod extends Mod {
      */
     public setTalcTilesEnabled(enabled: boolean): void {
         this.includeTalcTiles = enabled;
-        
-        // Re-scan tiles when setting changes
-        if (this.isHighlightingEnabled) {
-            this.clearAllHighlights();
-            this.scanVisibleTilesForQuality();
-        }
-    }
-    
-    /**
-     * Enable or disable topaz tiles highlighting
-     */
-    public setTopazTilesEnabled(enabled: boolean): void {
-        this.includeTopazTiles = enabled;
         
         // Re-scan tiles when setting changes
         if (this.isHighlightingEnabled) {
@@ -670,9 +647,9 @@ export default class QualityHighlighterMod extends Mod {
             const isDoodadKey = tileKey.endsWith(':doodad');
 
             const hasQuality = tile.quality !== undefined && tile.quality > 0;
-            const isOresTile = (this.includeOresTiles && this.isOresTerrain(tile.type)) ||
+            const isLimestoneTile = (this.includeLimestoneTiles && this.isLimestoneTerrain(tile.type)) ||
                 (this.includeTalcTiles && this.isTalcTerrain(tile.type)) ||
-                (this.includeGems && this.isTopazTerrain(tile.type)) ||
+                (this.includeGems && this.isGemTerrain(tile.type)) ||
                 (this.includeIronTiles && this.isIronTerrain(tile.type)) ||
                 (this.includeCopperTiles && this.isCopperTerrain(tile.type)) ||
                 (this.includeTinTiles && this.isTinTerrain(tile.type)) ||
@@ -690,7 +667,7 @@ export default class QualityHighlighterMod extends Mod {
                     shouldRemove = true;
                 }
             } else if (isOreKey) {
-                if (!isOresTile) {
+                if (!isLimestoneTile) {
                     shouldRemove = true;
                 }
             } else if (isGemKey) {
@@ -768,12 +745,12 @@ export default class QualityHighlighterMod extends Mod {
     }
 
     /**
-     * Create overlay info for ores tiles
+     * Create overlay info for limestone tiles
      */
-    private createOresOverlay(): IOverlayInfo {
+    private createLimestoneOverlay(): IOverlayInfo {
         return {
             type: OverlayType.QuestionMark,
-            // yellow for ores
+            // yellow for limestone
             red: 255,
             green: 255, 
             blue: 0,
@@ -782,7 +759,7 @@ export default class QualityHighlighterMod extends Mod {
     }
 
     /**
-     * Scan visible tiles around player for tiles with quality or ores
+     * Scan visible tiles around player for tiles with quality or limestone
      */
     private scanVisibleTilesForQuality(): void {
         if (!this.isHighlightingEnabled) return; // Don't scan if highlighting is disabled
@@ -808,17 +785,17 @@ export default class QualityHighlighterMod extends Mod {
                 const hasQuality = tile.quality !== undefined && tile.quality > 0;
                 
                 // Check if it's an ore tile (if any ore type is enabled)
-                const isOresTile = (this.includeOresTiles && this.isOresTerrain(tile.type)) ||
+                const isLimestoneTile = (this.includeLimestoneTiles && this.isLimestoneTerrain(tile.type)) ||
                     (this.includeTalcTiles && this.isTalcTerrain(tile.type)) ||
-                    (this.includeGems && this.isTopazTerrain(tile.type)) ||
+                    (this.includeGems && this.isGemTerrain(tile.type)) ||
                     (this.includeIronTiles && this.isIronTerrain(tile.type)) ||
                     (this.includeCopperTiles && this.isCopperTerrain(tile.type)) ||
                     (this.includeTinTiles && this.isTinTerrain(tile.type)) ||
                 (this.includeCoalTiles && this.isCoalTerrain(tile.type)) ||
                 (this.includeNiterTiles && this.isNiterTerrain(tile.type));
                 
-                // Skip if neither quality nor ores
-                if (!hasQuality && !isOresTile) continue;
+                // Skip if neither quality nor limestone
+                if (!hasQuality && !isLimestoneTile) continue;
                 
                 // If civilization items are enabled, check if it's a civilization item
                 const isCivilizationItem = hasQuality && tile.description?.civilizationScore && tile.description.civilizationScore > 0;
@@ -838,11 +815,11 @@ export default class QualityHighlighterMod extends Mod {
                 }
                 
                 // Handle ore overlay
-                if (isOresTile) {
+                if (isLimestoneTile) {
                     const oreTileKey = `${x},${y},${z}:ore`;
                     if (!this.qualityTilesToHighlight.has(oreTileKey)) {
                         tilesFound++;
-                        const overlay = this.createOresOverlay();
+                        const overlay = this.createLimestoneOverlay();
                         this.qualityTilesToHighlight.set(oreTileKey, {
                             tile,
                             overlay
@@ -886,9 +863,9 @@ export default class QualityHighlighterMod extends Mod {
      private qualityTilesToHighlight = new Map<string, { tile: Tile; overlay: IOverlayInfo }>();
      
      /**
-      * Check if terrain type contains ores (limestone)
+      * Check if terrain type is limestone
       */
-     private isOresTerrain(terrainType: TerrainType): boolean {
+     private isLimestoneTerrain(terrainType: TerrainType): boolean {
          return terrainType === TerrainType.GraniteWithLimestone ||
                 terrainType === TerrainType.SandstoneWithLimestone ||
                 terrainType === TerrainType.BasaltWithLimestone;
@@ -903,11 +880,10 @@ export default class QualityHighlighterMod extends Mod {
                 terrainType === TerrainType.BasaltWithTalc;
      }
      
-     /**
-      * Check if terrain type contains topaz
-      */
-     private isTopazTerrain(terrainType: TerrainType): boolean {
-         return terrainType === TerrainType.BasaltWithSapphire;
+     private isGemTerrain(terrainType: TerrainType): boolean {
+         return terrainType === TerrainType.SandstoneWithOpal ||
+                terrainType === TerrainType.GraniteWithTopaz ||
+                terrainType === TerrainType.BasaltWithSapphire;
      }
      
      /**
