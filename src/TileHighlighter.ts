@@ -44,7 +44,9 @@ export class TileHighlighter {
 
                 const hasQuality = tile.quality !== undefined && tile.quality > 0;
                 const isMinedTile = this.isEnabledMinedTile(tile.type);
-                if (!hasQuality && !isMinedTile) continue;
+                const hasDoodadQuality = this.mod.setting("includePlantsAndTrees") &&
+                    tile.doodad?.quality !== undefined && tile.doodad.quality >= Quality.Superior;
+                if (!hasQuality && !isMinedTile && !hasDoodadQuality) continue;
 
                 const isCivItem = hasQuality && tile.description?.civilizationScore && tile.description.civilizationScore > 0;
 
@@ -61,11 +63,8 @@ export class TileHighlighter {
                     if (hasGem) this.addOverlay(`${x},${y},${z}:gem`, tile, this.gemOverlay());
                 }
 
-                if (this.mod.setting("includePlantsAndTrees")) {
-                    const doodad = tile.doodad;
-                    if (doodad?.quality !== undefined && doodad.quality >= Quality.Superior) {
-                        this.addOverlay(`${x},${y},${z}:doodad`, tile, this.qualityOverlay(doodad.quality));
-                    }
+                if (hasDoodadQuality) {
+                    this.addOverlay(`${x},${y},${z}:doodad`, tile, this.qualityOverlay(tile.doodad!.quality!));
                 }
             }
         }
