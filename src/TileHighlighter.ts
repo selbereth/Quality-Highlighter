@@ -31,7 +31,7 @@ export class TileHighlighter {
 
     public scan(): void {
         if (!this.mod.setting("isHighlightingEnabled")) return;
-        const island = game.islands.active[0];
+        const island = localIsland;
         if (!island) return;
 
         const { x: cx, y: cy, z } = localPlayer;
@@ -88,7 +88,7 @@ export class TileHighlighter {
     }
 
     public addPlusTilesToWindow(): void {
-        const island = game.islands.active[0];
+        const island = localIsland;
         if (!island) return;
         const { x, y, z } = localPlayer;
         (window as any).tile1 = island.getTileSafe(x, y, z);
