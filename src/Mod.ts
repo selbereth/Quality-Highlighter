@@ -47,7 +47,6 @@ class QualityInfoDialog extends Dialog {
     
     constructor(id: DialogId) {
         super(id);
-        this.header.setText(() => "Quality Highlighter [H]");
         this.event.subscribe("load", (host, initial: boolean) => {
             this.setupUI();
         });
@@ -804,8 +803,8 @@ export default class QualityHighlighterMod extends Mod {
                 // If civilization items are enabled, check if it's a civilization item
                 const isCivilizationItem = hasQuality && tile.description?.civilizationScore && tile.description.civilizationScore > 0;
                 
-                // Handle quality overlay
-                if (hasQuality && (this.includeCivilizationItems || !isCivilizationItem)) {
+                // Handle quality overlay (skip if doodad is already being highlighted on this tile)
+                if (hasQuality && !hasDoodadQuality && (this.includeCivilizationItems || !isCivilizationItem)) {
                     const qualityTileKey = `${x},${y},${z}:quality`;
                     if (!this.qualityTilesToHighlight.has(qualityTileKey)) {
                         tilesFound++;

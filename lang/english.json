@@ -3,7 +3,7 @@
     
   "dictionaries": {
     "dialog": {
-      "modQualityItemHighlighterQualityInfoDialog": "Highlighter Settings"
+      "modQualityItemHighlighterQualityInfoDialog": "Highlighter Settings [H]"
     },
     "actions": {
       "modQualityItemHighlighterOpenQualityWindow": {
