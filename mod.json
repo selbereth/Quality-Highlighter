@@ -1,7 +1,7 @@
 {
 	"name": "Quality Item Highlighter",
 	"description": "Highlights tiles based on the tile quality so they are easier to identify.",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"author": "selbereth",
 	"file": "out/Mod",
 	"waywardVersion": "2.15.4-beta",
