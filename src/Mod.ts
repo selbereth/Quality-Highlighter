@@ -1,5 +1,7 @@
 import { EventHandler } from "@wayward/game/event/EventManager";
 import { EventBus } from "@wayward/game/event/EventBuses";
+import type { IActionHandlerApi, ActionType } from "@wayward/game/game/entity/action/IAction";
+import type ActionExecutor from "@wayward/game/game/entity/action/ActionExecutor";
 import Register from "@wayward/game/mod/ModRegistry";
 import { DialogId } from "@wayward/game/ui/screen/screens/game/Dialogs";
 import { ScreenId } from "@wayward/game/ui/screen/IScreen";
@@ -60,6 +62,15 @@ export default class QualityHighlighterMod extends ModSettings {
         if (this.setting("isHighlightingEnabled")) this.highlighter.scan();
         this.highlighter.cleanup();
         this.highlighter.addPlusTilesToWindow();
+    }
+
+    @EventHandler(EventBus.Actions, "postExecuteAction")
+    protected onAction(_host: ActionExecutor<any, any, any, any, any>, _type: ActionType, actionApi: IActionHandlerApi): void {
+        if (actionApi.executor !== localPlayer) return;
+        const tile = actionApi.targetTile;
+        if (!tile) return;
+        this.highlighter.rescanTile(tile);
+        this.highlighter.cleanup();
     }
 
     // -------------------------------------------------------------------------

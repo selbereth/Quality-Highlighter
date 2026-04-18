@@ -40,33 +40,51 @@ export class TileHighlighter {
         for (let x = cx - r; x <= cx + r; x++) {
             for (let y = cy - r; y <= cy + r; y++) {
                 const tile = island.getTileSafe(x, y, z);
-                if (!tile) continue;
-
-                const hasQuality = tile.quality !== undefined && tile.quality > 0;
-                const isMinedTile = this.isEnabledMinedTile(tile.type);
-                const hasDoodadQuality = this.mod.setting("includePlantsAndTrees") &&
-                    tile.doodad?.quality !== undefined && tile.doodad.quality >= Quality.Superior;
-                if (!hasQuality && !isMinedTile && !hasDoodadQuality) continue;
-
-                const isCivItem = hasQuality && tile.description?.civilizationScore && tile.description.civilizationScore > 0;
-
-                if (hasQuality && (this.mod.setting("includeCivilizationItems") || !isCivItem)) {
-                    this.addOverlay(`${x},${y},${z}:quality`, tile, this.qualityOverlay(tile.quality!));
-                }
-
-                if (isMinedTile) {
-                    this.addOverlay(`${x},${y},${z}:ore`, tile, this.oreOverlay());
-                }
-
-                if (this.mod.setting("includeGems")) {
-                    const hasGem = tile.containedItems?.some(item => item.isInGroup(ItemTypeGroup.Gem)) ?? false;
-                    if (hasGem) this.addOverlay(`${x},${y},${z}:gem`, tile, this.gemOverlay());
-                }
-
-                if (hasDoodadQuality) {
-                    this.addOverlay(`${x},${y},${z}:doodad`, tile, this.qualityOverlay(tile.doodad!.quality!));
-                }
+                if (tile) this.processTile(tile);
             }
+        }
+    }
+
+    public rescanTile(tile: Tile): void {
+        if (!this.mod.setting("isHighlightingEnabled")) return;
+        const { x, y, z } = tile;
+        for (const suffix of [':quality', ':ore', ':gem', ':doodad'] as const) {
+            const key = `${x},${y},${z}${suffix}`;
+            const entry = this.tracked.get(key);
+            if (entry) {
+                entry.tile.removeOverlay(entry.overlay);
+                this.tracked.delete(key);
+            }
+        }
+        this.processTile(tile);
+    }
+
+    private processTile(tile: Tile): void {
+        const { x, y, z } = tile;
+
+        const hasQuality = tile.quality !== undefined && tile.quality > 0;
+        const isMinedTile = this.isEnabledMinedTile(tile.type);
+        const hasDoodadQuality = this.mod.setting("includePlantsAndTrees") &&
+            tile.doodad?.quality !== undefined && tile.doodad.quality >= Quality.Superior;
+        if (!hasQuality && !isMinedTile && !hasDoodadQuality) return;
+
+        const isCivItem = hasQuality && tile.description?.civilizationScore && tile.description.civilizationScore > 0;
+
+        if (hasQuality && (this.mod.setting("includeCivilizationItems") || !isCivItem)) {
+            this.addOverlay(`${x},${y},${z}:quality`, tile, this.qualityOverlay(tile.quality!));
+        }
+
+        if (isMinedTile) {
+            this.addOverlay(`${x},${y},${z}:ore`, tile, this.oreOverlay());
+        }
+
+        if (this.mod.setting("includeGems")) {
+            const hasGem = tile.containedItems?.some(item => item.isInGroup(ItemTypeGroup.Gem)) ?? false;
+            if (hasGem) this.addOverlay(`${x},${y},${z}:gem`, tile, this.gemOverlay());
+        }
+
+        if (hasDoodadQuality) {
+            this.addOverlay(`${x},${y},${z}:doodad`, tile, this.qualityOverlay(tile.doodad!.quality!));
         }
     }
 
