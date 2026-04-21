@@ -1,14 +1,14 @@
 import { Quality } from "@wayward/game/game/IObject";
 import type Tile from "@wayward/game/game/tile/Tile";
-import { IOverlayInfo, OverlayType } from "@wayward/game/game/tile/ITerrain";
-import { ItemTypeGroup } from "@wayward/game/game/item/IItem";
+import { IOverlayInfo, OverlayType } from "@wayward/game/game/tile/ITerrain"; 
 import {
     isLimestoneTerrain, isTalcTerrain, isGemTerrain,
     isIronTerrain, isCopperTerrain, isTinTerrain,
     isCoalTerrain, isNiterTerrain,
 } from "./TerrainChecks";
 import { SettingKey } from "./IQualityHighlighterSaveData";
-import type { ModSettings } from "./ModSettings";
+import type { ModSettings } from "./ModSettings"; 
+import { ItemTypeGroup } from "@wayward/game/game/item/IItem";
 
 type TileEntry = { tile: Tile; overlay: IOverlayInfo };
 
@@ -65,6 +65,7 @@ export class TileHighlighter {
         const hasQuality = tile.quality !== undefined && tile.quality > 0;
         const isMinedTile = this.isEnabledMinedTile(tile.type);
         const hasDoodadQuality = this.mod.setting("includePlantsAndTrees") &&
+            tile?.doodad?.growth &&
             tile.doodad?.quality !== undefined && tile.doodad.quality >= Quality.Superior;
         if (!hasQuality && !isMinedTile && !hasDoodadQuality) return;
 
@@ -138,7 +139,9 @@ export class TileHighlighter {
         if (key.endsWith(':gem'))    return !this.mod.setting("includeGems") || !(tile.containedItems?.some(i => i.isInGroup(ItemTypeGroup.Gem)) ?? false);
         if (key.endsWith(':doodad')) {
             const doodad = tile.doodad;
-            return !this.mod.setting("includePlantsAndTrees") || doodad?.quality === undefined || doodad.quality < Quality.Superior;
+            return !this.mod.setting("includePlantsAndTrees") || 
+                   !doodad || !doodad.growth ||
+                   doodad?.quality === undefined || doodad.quality < Quality.Superior;
         }
         return false;
     }
